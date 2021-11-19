@@ -52,12 +52,13 @@ def selectNonOverlappingIntervals(intervalsCount, config):
         i+=1
     keys=set(aggregatedIntervalDepths.keys())
     for interval in keys:
-        if interval not in multiReadIntervals or aggregatedIntervalDepths[interval]<config.minRegionDepth: #fewer than 10 reads map to the region
+        if interval not in multiReadIntervals or aggregatedIntervalDepths[interval]<config.minRegionDepth: #fewer than N reads map to the region
             aggregatedIntervalDepths.pop(interval)
     return multiReadIntervals, aggregatedIntervalDepths
 
 
 chrRegions={} #key=chr, value=[start, end]
+pairedReadIDs={} #key=read id, tuple=min(read1, read2), max(read1,read2)
 def run(samples, config):
     for sample in samples:
         bam = ps.AlignmentFile(config.bamDir+sample, "rb",check_sq=False)
@@ -65,13 +66,21 @@ def run(samples, config):
             if not read.is_unmapped:
                 if bam.get_reference_name(read.reference_id) not in chrRegions:
                     chrRegions[bam.get_reference_name(read.reference_id)]=[]
-                if read.is_paired:
-                    pass
+                if read.is_paired and not  read.is_secondary:# and read.is_proper_pair:
+                    ###Illumina data
+                    #print(read.query_name)
+                    if read.query_name not in pairedReadIDs:
+                        pairedReadIDs[read.query_name]=( min(read.reference_start,read.reference_end), max(read.reference_start,read.reference_end) )
+                    else:
+                        #this is the second read of a pair
+                        #using min of three numbers allows to disregard the mapping orentation.
+                        startOfPair=min(read.reference_start,read.reference_end, pairedReadIDs[read.query_name][0])
+                        endOfPair=max(read.reference_start,read.reference_end, pairedReadIDs[read.query_name][1])
+                        chrRegions[bam.get_reference_name(read.reference_id)].append( (startOfPair,endOfPair) ) 
                 else:
                     #single end sequencing or 3rd gen sequencing
                     chrRegions[bam.get_reference_name(read.reference_id)].append( (read.reference_start,read.reference_end) ) 
 
-            # chrRegions[read.reference_id].append(read.get_reference_positions()[0])
     joinedIntervals={} #key=chr, value=[start,end] of collapsed overlapping intervals    
     joinedDepths={} #key=chr, value={interval: depth} of collapsed overlapping intervals   
     for chr in chrRegions.keys():

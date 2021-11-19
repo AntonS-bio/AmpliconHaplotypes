@@ -2,9 +2,10 @@ import subprocess
 from os import mkdir
 from os.path import exists
 import shutil
-
+import time
 
 def run(sampleChrRegionReads, fileContent, config):
+
     tempDir=config.tempDir
 
     if exists(tempDir):
@@ -32,7 +33,12 @@ def run(sampleChrRegionReads, fileContent, config):
                         mafftinput.write(f'>{sample} read_{str(i)}\n')
                         mafftinput.write(read+"\n")
                         i+=1
+    
+    runTimes={} #keeps track of run time, mostly mafft, per region. Long run indicates likely problems
     for filePrefix in filesToAlign:
+        
+        startTime = time.time()
         print("processing "+filePrefix)        
         subprocess.run(f'mafft --quiet {tempDir}/{filePrefix}.fasta > {tempDir}/mafft{filePrefix}.fasta', shell=True, executable="/bin/bash", stdout=subprocess.PIPE)
-    return alignedFiles
+        runTimes[filePrefix]=startTime-time.time()
+    return alignedFiles, runTimes
