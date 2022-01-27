@@ -66,7 +66,7 @@ def run(samples, config):
             if not read.is_unmapped:
                 if bam.get_reference_name(read.reference_id) not in chrRegions:
                     chrRegions[bam.get_reference_name(read.reference_id)]=[]
-                if read.is_paired and not  read.is_secondary:# and read.is_proper_pair:
+                if read.is_paired  and not read.is_unmapped and not  read.is_secondary:# and read.is_proper_pair:
                     ###Illumina data
                     #print(read.query_name)
                     if read.query_name not in pairedReadIDs:

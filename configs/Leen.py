@@ -7,3 +7,4 @@ class configData:
         self.maxDistanceBetweenReads=20 #any regions where starts and ends are both fewer than this bases apart are considered one region
         self.minPosDepthAbsolute=5 #to accomodate high error rate in MinIon, the positions in nucleotide matrix supported by fewer than this reads are dropped
         self.minPosDepthRelative=0.01 #to accomodate high error rate in MinIon, the positions in nucleotide matrix supported by lower than this % of total reads dropped
+        self.MaxReadsToOutput=1000 #use for downsampling of very large datasets
