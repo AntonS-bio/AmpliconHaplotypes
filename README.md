@@ -11,11 +11,11 @@ The Main.py does the following:
 
 The matrices can be analysed in AmpliconReadClustering notebook. 
 
-Relies on 
-numpy
-pandas
-umap (McInnes, L, Healy, J, 2018) though this can be replaced with sklearn implementaiton of TSNE or other methods.
-matplotlib
-sklearn
-BioPython
-pysam
+Relies on:
+numpy  
+pandas  
+umap (McInnes, L, Healy, J, 2018) though this can be replaced with sklearn implementaiton of TSNE or other methods.  
+matplotlib  
+sklearn  
+BioPython  
+pysam  
