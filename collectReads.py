@@ -1,6 +1,7 @@
 import pysam as ps
 import random
 
+
 def getReadsFromBams(validsamples, intervalDepths, config):
 
     sampleChrRegionReads={}
@@ -29,8 +30,8 @@ def getReadsFromBams(validsamples, intervalDepths, config):
                     fullRead="-"*(max(readStart,readEnd,pairedReadStartEnd[read.query_name][1])-min(readStart,readEnd,pairedReadStartEnd[read.query_name][0]))
                     if min(readStart,readEnd)<pairedReadStartEnd[read.query_name][0]:
                         #the current read comes first in the pair
-                        fullread=read.query_alignment_sequence.replace("N","-")+fullRead[len(read.query_alignment_sequence.replace("N","-")):]
-                        fullread=fullRead[ 0: len(fullRead)-pairedReadStartEnd[read.query_name][0] ] + pairedReadSequences[read.query_name]
+                        fullRead=read.query_alignment_sequence.replace("N","-")+fullRead[len(read.query_alignment_sequence.replace("N","-")):]
+                        fullRead=fullRead[ 0: len(fullRead)-pairedReadStartEnd[read.query_name][0] ] + pairedReadSequences[read.query_name]
                         pairedReadSequences[read.query_name]=fullRead
                     else:
                         fullRead=pairedReadSequences[read.query_name]+fullRead[len(pairedReadSequences[read.query_name]):]
@@ -56,7 +57,10 @@ def getReadsFromBams(validsamples, intervalDepths, config):
                             break
                     if (read.reference_id, readStart, readEnd) not in readStartEndToRegion: #this checks if read in in target regions, if not it is skipped
                         continue
-                sampleChrRegionReads[sample][bam.get_reference_name(read.reference_id)][readStartEndToRegion[(read.reference_id,readStart, readEnd)]].append(read.query_alignment_sequence.replace("N","-"))
+                if (read.query_name in pairedReadIDs and pairedReadIDs[read.query_name]==2):
+                    sampleChrRegionReads[sample][bam.get_reference_name(read.reference_id)][readStartEndToRegion[(read.reference_id,readStart, readEnd)]].append(pairedReadSequences[read.query_name].replace("N","-"))
+                else:
+                    sampleChrRegionReads[sample][bam.get_reference_name(read.reference_id)][readStartEndToRegion[(read.reference_id,readStart, readEnd)]].append(read.query_alignment_sequence.replace("N","-"))
 
 
     #check if for some sampels reads need to be downsampled
@@ -71,3 +75,11 @@ def getReadsFromBams(validsamples, intervalDepths, config):
     return sampleChrRegionReads
     #the reads from samples have been collected into sampleChrRegionReads[sample][chr][region]=[read seqeuences]
     #print them to fasta and allign using mafft
+
+# from collections import Counter
+# import configs.LeenNewBarcodes as Config
+# config=Config.configData()
+# intervalDepths={'Pf3D7_03_v3': {(221325, 221660): 26698, (221326, 221353): 1529, (221639, 221663): 14, (221326, 221400): 24}, 'Pf3D7_13_v3': {(1465038, 1465398): 12553}, 'Pf3D7_07_v3': {(403511, 404010): 998, (403512, 403553): 48}}
+# intervalDepths={'Pf3D7_13_v3': {(1465038, 1465398): 12553}}
+# validsamples=["sample2.bam"]
+# getReadsFromBams(validsamples,intervalDepths,config)
